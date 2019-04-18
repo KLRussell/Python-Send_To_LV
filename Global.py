@@ -42,7 +42,7 @@ def grabobjs(scriptdir):
         if myinput:
             myobjs['Local_Settings'] = ShelfHandle(os.path.join(scriptdir, 'Script_Settings'))
             myobjs['Local_Settings'].add_item('General_Settings_Path', myinput)
-            myobjs['Settings'] = ShelfHandle(os.path.join(scriptdir, 'General_Settings'))
+            myobjs['Settings'] = ShelfHandle(os.path.join(myinput, 'General_Settings'))
 
         myobjs['Event_Log'] = LogHandle(scriptdir)
         myobjs['SQL'] = SQLHandle(myobjs['Settings'])

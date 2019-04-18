@@ -94,6 +94,27 @@ class LVBatch:
         self.table = Global_Objs['Local_Settings'].grab_item('STLV_TBL')
         self.columns = Global_Objs['Local_Settings'].grab_item('STLV_TBL_Cols')
 
+    def validate(self):
+        data = self.asql.query('''
+            SELECT
+                1
+
+            FROM {10
+
+            WHERE
+                Batch is null
+                    AND
+                Is_Rejected is null
+            '''.format(self.table))
+
+        if data.empty:
+            return True
+        else:
+            Global_Objs['Event_Log'].write_log(
+                'There are {0} items that hasnt been reviewed by DART. Unable to batch to LV'.format(len(data)))
+
+            return False
+
     def grab_batch(self):
         Global_Objs['Event_Log'].write_log('Grabbing items from {0} to batch to LV'.format(self.table))
 
@@ -101,7 +122,13 @@ class LVBatch:
             SELECT
                 {0}
             
-            FROM {1}'''.format(self.columns, self.table))
+            FROM {1}
+            
+            WHERE
+                Batch is null
+                    AND
+                Is_Rejected = 'N'
+            '''.format(self.columns, self.table))
 
     def write_batch(self):
         if self.data.empty:
@@ -163,24 +190,24 @@ def check_settings():
                                          inputmsg='Please provide the user pass for the email login:')
 
     if not Global_Objs['Local_Settings'].grab_item('email_from'):
-        Global_Objs['Settings'].add_item(key='email_from',
-                                         inputmsg='Please provide your e-mail address:')
+        Global_Objs['Local_Settings'].add_item(key='email_from',
+                                               inputmsg='Please provide your e-mail address:')
 
     if not Global_Objs['Local_Settings'].grab_item('email_to'):
-        Global_Objs['Settings'].add_item(key='email_to',
+        Global_Objs['Local_Settings'].add_item(key='email_to',
                                          inputmsg='Please provide the e-mail address to send e-mail:')
 
     if not Global_Objs['Local_Settings'].grab_item('email_cc'):
-        Global_Objs['Settings'].add_item(key='email_cc',
-                                         inputmsg='Please provide a cc to include in the e-mail:')
+        Global_Objs['Local_Settings'].add_item(key='email_cc',
+                                               inputmsg='Please provide a cc to include in the e-mail:')
 
     if not Global_Objs['Local_Settings'].grab_item('STLV_TBL'):
-        Global_Objs['Settings'].add_item(key='STLV_TBL',
-                                         inputmsg='Please provide the Send To LV SQL table:')
+        Global_Objs['Local_Settings'].add_item(key='STLV_TBL',
+                                               inputmsg='Please provide the Send To LV SQL table:')
 
     if not Global_Objs['Local_Settings'].grab_item('STLV_TBL_Cols'):
-        Global_Objs['Settings'].add_item(key='STLV_TBL_Cols',
-                                         inputmsg='Please provide the columns for the Send To LV SQL table:')
+        Global_Objs['Local_Settings'].add_item(key='STLV_TBL_Cols',
+                                               inputmsg='Please provide the columns for the Send To LV SQL table:')
 
 
 if __name__ == '__main__':
@@ -192,10 +219,11 @@ if __name__ == '__main__':
     myobj = LVBatch()
 
     try:
-        myobj.grab_batch()
+        if myobj.validate():
+            myobj.grab_batch()
 
-        if myobj.write_batch():
-            myobj.send_batch()
+            if myobj.write_batch():
+                myobj.send_batch()
 
     finally:
         myobj.close_conn()
