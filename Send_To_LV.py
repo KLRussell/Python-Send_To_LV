@@ -137,7 +137,7 @@ class LVBatch:
             obj.email_connect()
             obj.package_email()
             obj.email_send()
-            
+
         finally:
             obj.email_close()
 
@@ -199,20 +199,3 @@ if __name__ == '__main__':
 
     finally:
         myobj.close_conn()
-
-
-
-
-'''
-# C:\Workspace\python\Bin
-email_server = 'imail.granitenet.com'
-email_port = 465
-email_user = ''
-email_pass = ''
-
-context = ssl.create_defaul_context()
-
-with smtplib.SMTP_SSL(email_server, email_port) as server:
-    server.login(email_user, email_pass)
-    server.sendmail()
-'''
