@@ -5,6 +5,7 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 from email import encoders
 
+import socks
 import smtplib
 import zipfile
 import os
@@ -37,7 +38,13 @@ class EmailLV:
         Global_Objs['Event_Log'].write_log('Connecting to Server {0} port {1}'.format(self.email_server,
                                                                                       self.email_port))
 
-        self.server = smtplib.SMTP_SSL(self.email_server, self.email_port)
+        # socks.setdefaultproxy(socks.SOCKS5, 'cas.granitenet.com')
+        # socks.wrapmodule(smtplib)
+        self.server = smtplib.SMTP_SSL()
+            #('imail.granitenet.com')
+        # self.server = smtplib.SMTP(self.email_server, self.email_port)
+        self.server.ehlo()
+        self.server.starttls()
         self.server.ehlo()
         self.server.login(self.email_user, self.email_pass)
 
@@ -90,7 +97,8 @@ class LVBatch:
     data = pd.DataFrame()
 
     def __init__(self):
-        self.asql = Global_Objs['SQL'].connect('alch')
+        self.asql = Global_Objs['SQL']
+        self.asql.connect('alch')
         self.table = Global_Objs['Local_Settings'].grab_item('STLV_TBL')
         self.columns = Global_Objs['Local_Settings'].grab_item('STLV_TBL_Cols')
 
@@ -99,7 +107,7 @@ class LVBatch:
             SELECT
                 1
 
-            FROM {10
+            FROM {0}
 
             WHERE
                 Batch is null
@@ -150,7 +158,8 @@ class LVBatch:
             Global_Objs['Event_Log'].write_log('Found {0} items to batch. Proceeding to batch to excel'.format(
                 len(self.data)
             ))
-            self.file = os.path.join(BatchedDir, '{0}_LV-Batch'.format(datetime.datetime.now().__format__("%Y%m%d")))
+            self.file = os.path.join(BatchedDir, '{0}_LV-Batch.xlsx'.format(
+                datetime.datetime.now().__format__("%Y%m%d")))
 
             with pd.ExcelWriter(self.file) as writer:
                 self.data.to_excel(writer, index=False, sheet_name=datetime.datetime.now().__format__("%Y%m%d"))
@@ -159,9 +168,9 @@ class LVBatch:
 
     def send_batch(self):
         obj = EmailLV(self.file)
+        obj.email_connect()
 
         try:
-            obj.email_connect()
             obj.package_email()
             obj.email_send()
 
