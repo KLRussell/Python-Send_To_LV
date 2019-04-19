@@ -93,7 +93,7 @@ class CryptHandle:
         crypt_obj = Fernet(self.key)
         self.encrypted_text = crypt_obj.encrypt(text.encode())
 
-    def grab_text(self):
+    def decrypt_text(self):
         if self.key and self.encrypted_text:
             crypt_obj = Fernet(self.key)
             return crypt_obj.decrypt(self.encrypted_text).decode()

@@ -35,15 +35,15 @@ class EmailLV:
         self.email_cc = Global_Objs['Local_Settings'].grab_item('email_cc')
 
     def email_connect(self):
-        Global_Objs['Event_Log'].write_log('Connecting to Server {0} port {1}'.format(self.email_server,
-                                                                                      self.email_port))
+        Global_Objs['Event_Log'].write_log('Connecting to Server {0} port {1}'.format(self.email_server.decrypt_text(),
+                                                                                      self.email_port.decrypt_text()))
 
-        self.server = smtplib.SMTP('imail.granitenet.com', 587)
+        self.server = smtplib.SMTP(self.email_server.decrypt_text(), self.email_port.decrypt_text())
 
         self.server.ehlo()
         self.server.starttls()
         self.server.ehlo()
-        self.server.login(self.email_user, self.email_pass)
+        self.server.login(self.email_user.decrypt_text(), self.email_pass.decrypt_text())
 
     def email_send(self):
         self.server.sendmail(self.email_from, self.email_to, str(self.message))
