@@ -46,7 +46,7 @@ class EmailLV:
         self.server.login(self.email_user.decrypt_text(), self.email_pass.decrypt_text())
 
     def email_send(self):
-        self.server.sendmail(self.email_from, self.email_to, str(self.message))
+        self.server.sendmail(self.email_from.decrypt_text(), self.email_to.decrypt_text(), str(self.message))
 
         Global_Objs['Event_Log'].write_log('Batch to LV has been sent')
 
@@ -56,15 +56,14 @@ class EmailLV:
     def package_email(self):
         Global_Objs['Event_Log'].write_log('Packaging e-mail to be sent to LV')
 
-        self.message['From'] = self.email_from
-        self.message['To'] = self.email_to
-        if self.email_cc:
-            self.message['Cc'] = self.email_cc
+        self.message['From'] = self.email_from.decrypt_text()
+        self.message['To'] = self.email_to.decrypt_text()
+        self.message['Cc'] = self.email_cc.decrypt_text()
         self.message['Date'] = formatdate(localtime=True)
         self.message['Subject'] = email_subject
 
         if self.file:
-            self.message.attach(MIMEText(email_message.format(self.email_cc)))
+            self.message.attach(MIMEText(email_message.format(self.email_cc.decrypt_text())))
 
             part = MIMEBase('application', "octet-stream")
             self.zip_file()
@@ -79,7 +78,7 @@ class EmailLV:
             finally:
                 zf.close()
         else:
-            self.message.attach(MIMEText(email_message2.format(self.email_cc)))
+            self.message.attach(MIMEText(email_message2.format(self.email_cc.decrypt_text())))
 
     def zip_file(self):
         i = 1
@@ -127,7 +126,7 @@ class LVBatch:
                 Batch is null
                     AND
                 Is_Rejected is null
-            '''.format(self.table))
+            '''.format(self.table.decrypt_text()))
 
         if data.empty:
             return True
@@ -138,7 +137,7 @@ class LVBatch:
             return False
 
     def grab_batch(self):
-        Global_Objs['Event_Log'].write_log('Grabbing items from {0} to batch to LV'.format(self.table))
+        Global_Objs['Event_Log'].write_log('Grabbing items from {0} to batch to LV'.format(self.table.decrypt_text()))
 
         self.data = self.asql.query('''
             SELECT
@@ -150,7 +149,7 @@ class LVBatch:
                 Batch is null
                     AND
                 Is_Rejected = 'N'
-            '''.format(self.columns, self.table))
+            '''.format(self.columns.decrypt_text(), self.table.decrypt_text()))
 
     def write_batch(self):
         if self.data.empty:
@@ -229,23 +228,25 @@ def check_settings():
 
     if not Global_Objs['Local_Settings'].grab_item('email_from'):
         Global_Objs['Local_Settings'].add_item(key='email_from',
-                                               inputmsg='Please provide your e-mail address:')
+                                               inputmsg='Please provide your e-mail address:', encrypt=True)
 
     if not Global_Objs['Local_Settings'].grab_item('email_to'):
         Global_Objs['Local_Settings'].add_item(key='email_to',
-                                               inputmsg='Please provide the e-mail address to send e-mail:')
+                                               inputmsg='Please provide the e-mail address to send e-mail:',
+                                               encrypt=True)
 
     if not Global_Objs['Local_Settings'].grab_item('email_cc'):
         Global_Objs['Local_Settings'].add_item(key='email_cc',
-                                               inputmsg='Please provide a cc to include in the e-mail:')
+                                               inputmsg='Please provide a cc to include in the e-mail:', encrypt=True)
 
     if not Global_Objs['Local_Settings'].grab_item('STLV_TBL'):
         Global_Objs['Local_Settings'].add_item(key='STLV_TBL',
-                                               inputmsg='Please provide the Send To LV SQL table:')
+                                               inputmsg='Please provide the Send To LV SQL table:', encrypt=True)
 
     if not Global_Objs['Local_Settings'].grab_item('STLV_TBL_Cols'):
         Global_Objs['Local_Settings'].add_item(key='STLV_TBL_Cols',
-                                               inputmsg='Please provide the columns for the Send To LV SQL table:')
+                                               inputmsg='Please provide the columns for the Send To LV SQL table:',
+                                               encrypt=True)
 
 
 if __name__ == '__main__':

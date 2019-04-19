@@ -308,19 +308,22 @@ class SQLHandle:
                 self.create_conn_str(server=self.server, database=self.database)
             else:
                 if not self.settingsobj.grab_item('Server') and not self.settingsobj.grab_item('Database'):
-                    self.settingsobj.add_item('Server', inputmsg='Please input Server to store in settings:')
-                    self.settingsobj.add_item('Database', inputmsg='Please input Database name to store in settings:')
+                    self.settingsobj.add_item('Server', inputmsg='Please input Server to store in settings:',
+                                              encrypt=True)
+                    self.settingsobj.add_item('Database', inputmsg='Please input Database name to store in settings:',
+                                              encrypt=True)
 
-                self.create_conn_str(server=self.settingsobj.grab_item('Server')
-                                     , database=self.settingsobj.grab_item('Database'))
+                self.create_conn_str(server=self.settingsobj.grab_item('Server').decrypt_text()
+                                     , database=self.settingsobj.grab_item('Database').decrypt_text())
         elif self.conn_type == 'dsn':
             if self.dsn:
                 self.create_conn_str(dsn=self.dsn)
             else:
-                if not self.settingsobj.grab_item('DSN'):
-                    self.settingsobj.add_item('DSN', inputmsg='Please input DSN name to store in settings:')
+                if not self.settingsobj.grab_item('DSN').decrypt_text():
+                    self.settingsobj.add_item('DSN', inputmsg='Please input DSN name to store in settings:',
+                                              encrypt=True)
 
-                self.create_conn_str(dsn=self.settingsobj.grab_item('DSN'))
+                self.create_conn_str(dsn=self.settingsobj.grab_item('DSN').decrypt_text())
         else:
             self.create_conn_str()
 
