@@ -6,6 +6,8 @@ from email.utils import formatdate
 from email import encoders
 
 import socks
+import ssl
+import sys
 import smtplib
 import zipfile
 import os
@@ -38,11 +40,8 @@ class EmailLV:
         Global_Objs['Event_Log'].write_log('Connecting to Server {0} port {1}'.format(self.email_server,
                                                                                       self.email_port))
 
-        # socks.setdefaultproxy(socks.SOCKS5, 'cas.granitenet.com')
-        # socks.wrapmodule(smtplib)
-        self.server = smtplib.SMTP_SSL()
-            #('imail.granitenet.com')
-        # self.server = smtplib.SMTP(self.email_server, self.email_port)
+        self.server = smtplib.SMTP('imail.granitenet.com', 587)
+
         self.server.ehlo()
         self.server.starttls()
         self.server.ehlo()
@@ -70,26 +69,28 @@ class EmailLV:
             self.message.attach(MIMEText(email_message.format(self.email_cc)))
 
             part = MIMEBase('application', "octet-stream")
-            myzip = self.zip_file()
-            part.set_payload(myzip[1].read('rb'))
+            zip_filepath = self.zip_file()
+            zf = open(zip_filepath, 'rb')
+            part.set_payload(zf.read())
             encoders.encode_base64(part)
-            part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(myzip[0]))
+            part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(zip_filepath))
             self.message.attach(part)
         else:
             self.message.attach(MIMEText(email_message2.format(self.email_cc)))
 
     def zip_file(self):
-        zip_filename = os.path.join(os.path.dirname(self.file),
-                                    '{0}.zip'.format(os.path.split(os.path.basename(self.file))[0]))
-        zip_file = zipfile.ZipFile(zip_filename, mode='w')
+        zip_filepath = os.path.join(os.path.dirname(self.file),
+                                    '{0}.zip'.format(os.path.splitext(os.path.basename(self.file))[0]))
+
+        zip_file = zipfile.ZipFile(zip_filepath, mode='w')
 
         try:
-            zip_file.write(self.file)
+            zip_file.write(self.file, os.path.basename(self.file))
         finally:
             zip_file.close()
 
         os.remove(self.file)
-        return [zip_filename, zip_file]
+        return zip_filepath
 
 
 class LVBatch:
