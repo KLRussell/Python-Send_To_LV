@@ -5,9 +5,6 @@ from email.mime.text import MIMEText
 from email.utils import formatdate
 from email import encoders
 
-import socks
-import ssl
-import sys
 import smtplib
 import zipfile
 import os
@@ -18,8 +15,8 @@ CurrDir = os.path.dirname(os.path.abspath(__file__))
 BatchedDir = os.path.join(CurrDir, '02_Batched')
 Global_Objs = grabobjs(CurrDir)
 email_subject = 'Send To LV Batch'
-email_message = r'Hello LV,\nPlease see the attached Send To LV Batch. If you have any questions, please reach-out to {0} for more information.'
-email_message2 = r'Hello LV,\nThere is no Send To LV Batch. If you have any questions, please reach-out to {0} for more information.'
+email_message = 'Hello LV,\n\nPlease see the attached Send To LV Batch.\n\nIf you have any questions, please reach-out to {0} for more information.'
+email_message2 = 'Hello LV,\n\nThere is no Send To LV Batch.\n\nIf you have any questions, please reach-out to {0} for more information.'
 
 
 class EmailLV:
@@ -73,7 +70,7 @@ class EmailLV:
             zf = open(zip_filepath, 'rb')
             part.set_payload(zf.read())
             encoders.encode_base64(part)
-            part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(zip_filepath))
+            part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(os.path.basename(zip_filepath)))
             self.message.attach(part)
         else:
             self.message.attach(MIMEText(email_message2.format(self.email_cc)))
