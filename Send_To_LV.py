@@ -20,6 +20,7 @@ email_message2 = 'Hello LV,\n\nThere is no Send To LV Batch.\n\nIf you have any 
 
 
 class EmailLV:
+    zip_filepath = None
     server = None
     message = MIMEMultipart()
 
@@ -66,28 +67,42 @@ class EmailLV:
             self.message.attach(MIMEText(email_message.format(self.email_cc)))
 
             part = MIMEBase('application', "octet-stream")
-            zip_filepath = self.zip_file()
-            zf = open(zip_filepath, 'rb')
-            part.set_payload(zf.read())
-            encoders.encode_base64(part)
-            part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(os.path.basename(zip_filepath)))
-            self.message.attach(part)
+            self.zip_file()
+            zf = open(self.zip_filepath, 'rb')
+
+            try:
+                part.set_payload(zf.read())
+                encoders.encode_base64(part)
+                part.add_header('Content-Disposition', 'attachment; filename="{0}"'.format(
+                    os.path.basename(self.zip_filepath)))
+                self.message.attach(part)
+            finally:
+                zf.close()
         else:
             self.message.attach(MIMEText(email_message2.format(self.email_cc)))
 
     def zip_file(self):
-        zip_filepath = os.path.join(os.path.dirname(self.file),
-                                    '{0}.zip'.format(os.path.splitext(os.path.basename(self.file))[0]))
+        i = 1
 
-        zip_file = zipfile.ZipFile(zip_filepath, mode='w')
+        while not self.file:
+            if i > 1:
+                self.zip_filepath = os.path.join(os.path.dirname(self.file),
+                                                 '{0}{1}.zip'.format(
+                                                     os.path.splitext(os.path.basename(self.file))[0], i))
+            else:
+                self.zip_filepath = os.path.join(os.path.dirname(self.file),
+                                                 '{0}.zip'.format(os.path.splitext(os.path.basename(self.file))[0]))
+
+            if os.path.exists(self.zip_filepath):
+                self.zip_filepath = None
+
+        zip_file = zipfile.ZipFile(self.zip_filepath, mode='w')
 
         try:
             zip_file.write(self.file, os.path.basename(self.file))
         finally:
             zip_file.close()
-
-        os.remove(self.file)
-        return zip_filepath
+            os.remove(self.file)
 
 
 class LVBatch:
@@ -141,6 +156,19 @@ class LVBatch:
             Global_Objs['Event_Log'].write_log('No items were found to batch', 'warning')
             myinput = None
 
+            i = 1
+
+            while not self.file:
+                if i > 1:
+                    self.file = os.path.join(BatchedDir, '{0}_LV-Batch{1}.xlsx'.format(
+                        datetime.datetime.now().__format__("%Y%m%d"), i))
+                else:
+                    self.file = os.path.join(BatchedDir, '{0}_LV-Batch.xlsx'.format(
+                        datetime.datetime.now().__format__("%Y%m%d")))
+
+                if os.path.exists(self.file):
+                    self.file = None
+
             while myinput:
                 print('Would you like to send LV a no batch e-mail? (yes, no)')
                 myinput = input()
@@ -156,8 +184,6 @@ class LVBatch:
             Global_Objs['Event_Log'].write_log('Found {0} items to batch. Proceeding to batch to excel'.format(
                 len(self.data)
             ))
-            self.file = os.path.join(BatchedDir, '{0}_LV-Batch.xlsx'.format(
-                datetime.datetime.now().__format__("%Y%m%d")))
 
             with pd.ExcelWriter(self.file) as writer:
                 self.data.to_excel(writer, index=False, sheet_name=datetime.datetime.now().__format__("%Y%m%d"))
@@ -182,19 +208,23 @@ class LVBatch:
 def check_settings():
     if not Global_Objs['Settings'].grab_item('email_server'):
         Global_Objs['Settings'].add_item(key='email_server',
-                                         inputmsg='Please provide the email server you would like to connect to:')
+                                         inputmsg='Please provide the email server you would like to connect to:',
+                                         encrypt=True)
 
     if not Global_Objs['Settings'].grab_item('email_port'):
         Global_Objs['Settings'].add_item(key='email_port',
-                                         inputmsg='Please provide the email port for the server. (Default is 465):')
+                                         inputmsg='Please provide the email port for the server. (Default is 465):',
+                                         encrypt=True)
 
     if not Global_Objs['Settings'].grab_item('email_user'):
         Global_Objs['Settings'].add_item(key='email_user',
-                                         inputmsg='Please provide the user name for the email login:')
+                                         inputmsg='Please provide the user name for the email login:',
+                                         encrypt=True)
 
     if not Global_Objs['Settings'].grab_item('email_pass'):
         Global_Objs['Settings'].add_item(key='email_pass',
-                                         inputmsg='Please provide the user pass for the email login:')
+                                         inputmsg='Please provide the user pass for the email login:',
+                                         encrypt=True)
 
     if not Global_Objs['Local_Settings'].grab_item('email_from'):
         Global_Objs['Local_Settings'].add_item(key='email_from',
@@ -202,7 +232,7 @@ def check_settings():
 
     if not Global_Objs['Local_Settings'].grab_item('email_to'):
         Global_Objs['Local_Settings'].add_item(key='email_to',
-                                         inputmsg='Please provide the e-mail address to send e-mail:')
+                                               inputmsg='Please provide the e-mail address to send e-mail:')
 
     if not Global_Objs['Local_Settings'].grab_item('email_cc'):
         Global_Objs['Local_Settings'].add_item(key='email_cc',
