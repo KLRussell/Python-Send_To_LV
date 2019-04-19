@@ -38,7 +38,7 @@ class EmailLV:
         Global_Objs['Event_Log'].write_log('Connecting to Server {0} port {1}'.format(self.email_server.decrypt_text(),
                                                                                       self.email_port.decrypt_text()))
 
-        self.server = smtplib.SMTP(self.email_server.decrypt_text(), self.email_port.decrypt_text())
+        self.server = smtplib.SMTP(str(self.email_server.decrypt_text()), int(self.email_port.decrypt_text()))
 
         self.server.ehlo()
         self.server.starttls()
@@ -84,7 +84,7 @@ class EmailLV:
     def zip_file(self):
         i = 1
 
-        while not self.file:
+        while not self.zip_filepath:
             if i > 1:
                 self.zip_filepath = os.path.join(os.path.dirname(self.file),
                                                  '{0}{1}.zip'.format(
@@ -94,6 +94,7 @@ class EmailLV:
                                                  '{0}.zip'.format(os.path.splitext(os.path.basename(self.file))[0]))
 
             if os.path.exists(self.zip_filepath):
+                i += 1
                 self.zip_filepath = None
 
         zip_file = zipfile.ZipFile(self.zip_filepath, mode='w')
@@ -156,19 +157,6 @@ class LVBatch:
             Global_Objs['Event_Log'].write_log('No items were found to batch', 'warning')
             myinput = None
 
-            i = 1
-
-            while not self.file:
-                if i > 1:
-                    self.file = os.path.join(BatchedDir, '{0}_LV-Batch{1}.xlsx'.format(
-                        datetime.datetime.now().__format__("%Y%m%d"), i))
-                else:
-                    self.file = os.path.join(BatchedDir, '{0}_LV-Batch.xlsx'.format(
-                        datetime.datetime.now().__format__("%Y%m%d")))
-
-                if os.path.exists(self.file):
-                    self.file = None
-
             while myinput:
                 print('Would you like to send LV a no batch e-mail? (yes, no)')
                 myinput = input()
@@ -184,6 +172,19 @@ class LVBatch:
             Global_Objs['Event_Log'].write_log('Found {0} items to batch. Proceeding to batch to excel'.format(
                 len(self.data)
             ))
+            i = 1
+
+            while not self.file:
+                if i > 1:
+                    self.file = os.path.join(BatchedDir, '{0}_LV-Batch{1}.xlsx'.format(
+                        datetime.datetime.now().__format__("%Y%m%d"), i))
+                else:
+                    self.file = os.path.join(BatchedDir, '{0}_LV-Batch.xlsx'.format(
+                        datetime.datetime.now().__format__("%Y%m%d")))
+
+                if os.path.exists(self.file):
+                    self.file = None
+                    i += 1
 
             with pd.ExcelWriter(self.file) as writer:
                 self.data.to_excel(writer, index=False, sheet_name=datetime.datetime.now().__format__("%Y%m%d"))
@@ -213,7 +214,7 @@ def check_settings():
 
     if not Global_Objs['Settings'].grab_item('email_port'):
         Global_Objs['Settings'].add_item(key='email_port',
-                                         inputmsg='Please provide the email port for the server. (Default is 465):',
+                                         inputmsg='Please provide the email port for the server. (Default is 465 or 587):',
                                          encrypt=True)
 
     if not Global_Objs['Settings'].grab_item('email_user'):
