@@ -201,6 +201,23 @@ class LVBatch:
         finally:
             obj.email_close()
 
+    def update_tbl(self):
+        if not self.data.empty:
+            self.asql.upload(self.data['STLV_ID'], 'LV_Tmp')
+
+            self.asql.execute('''
+                UPDATE A
+                    SET
+                        A.Batch = now()
+                
+                FROM {0} As A
+                INNER JOIN LV_Tmp As B
+                ON
+                    A.STLV_ID = B.STLV_ID
+            '''.format(self.table.decrypt_text()))
+
+            self.asql.execute('DROP TABLE LV_Tmp')
+
     def close_conn(self):
         self.asql.close()
 
@@ -263,6 +280,7 @@ if __name__ == '__main__':
 
             if myobj.write_batch():
                 myobj.send_batch()
+                # myobj.update_tbl()
 
     finally:
         myobj.close_conn()
