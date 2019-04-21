@@ -126,13 +126,21 @@ class SettingsGUI:
         lv_scrollbar2 = Scrollbar(stlv_list_frame, orient="horizontal")
         self.listbox = Listbox(stlv_list_frame, selectmode=SINGLE, width=25, yscrollcommand=lv_scrollbar.set,
                                xscrollcommand=lv_scrollbar2.set)
+        lv_scrollbar.config(command=self.listbox.yview)
+        lv_scrollbar2.config(command=self.listbox.xview)
         self.listbox.grid(row=0, column=0, rowspan=4, padx=8, pady=5)
+        lv_scrollbar.grid(row=0, column=1, rowspan=4, sticky=N+S)
+        lv_scrollbar2.grid(row=4, column=0, columnspan=2, sticky=E+W)
 
         lv_scrollbar3 = Scrollbar(stlv_list_frame3, orient="vertical")
         lv_scrollbar4 = Scrollbar(stlv_list_frame3, orient="horizontal")
         self.listbox2 = Listbox(stlv_list_frame3, selectmode=SINGLE, width=25, yscrollcommand=lv_scrollbar3.set,
                                 xscrollcommand=lv_scrollbar4.set)
+        lv_scrollbar3.config(command=self.listbox2.yview)
+        lv_scrollbar4.config(command=self.listbox2.xview)
         self.listbox2.grid(row=0, column=0, rowspan=4, padx=8, pady=5)
+        lv_scrollbar3.grid(row=0, column=1, rowspan=4, sticky=N + S)
+        lv_scrollbar4.grid(row=4, column=0, columnspan=2, sticky=E + W)
 
         move_all_button = Button(stlv_list_frame2, text='>>', width=4, command=self.move_right_all)
         move_all_button.grid(row=0, column=1, pady=10)
