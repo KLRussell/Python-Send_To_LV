@@ -26,7 +26,7 @@ class SettingsGUI:
 
     def build_gui(self):
         # Set GUI Geometry and GUI Title
-        self.main.geometry('509x595+500+100')
+        self.main.geometry('509x600+500+100')
         self.main.title('Send to LV Settings')
         self.main.resizable(False, False)
 
@@ -54,7 +54,7 @@ class SettingsGUI:
         stlv_list_frame.grid(row=1, column=0, rowspan=4, ipady=2, sticky='e')
         stlv_list_frame2.grid(row=1, column=1, rowspan=4, ipady=2)
         stlv_list_frame3.grid(row=1, column=2, rowspan=4, ipady=2, sticky='w')
-        buttons_frame.pack()
+        buttons_frame.pack(fill='both')
 
         # Apply Header text to Header_Frame that describes purpose of GUI
         header = Message(self.main, text=self.header_text, width=375, justify=CENTER)
@@ -138,7 +138,7 @@ class SettingsGUI:
                                 xscrollcommand=lv_scrollbar4.set)
         lv_scrollbar3.config(command=self.listbox2.yview)
         lv_scrollbar4.config(command=self.listbox2.xview)
-        self.listbox2.grid(row=0, column=0, rowspan=4, padx=8, pady=5) 
+        self.listbox2.grid(row=0, column=0, rowspan=4, padx=8, pady=5)
         lv_scrollbar3.grid(row=0, column=1, rowspan=4, sticky=N + S)
         lv_scrollbar4.grid(row=4, column=0, columnspan=2, sticky=E + W)
 
@@ -151,8 +151,19 @@ class SettingsGUI:
         move_all_button = Button(stlv_list_frame2, text='<<', width=4, command=self.move_left_all)
         move_all_button.grid(row=3, column=1, pady=5)
 
+        save_settings_button = Button(buttons_frame, text='Save Settings', width=20, command=self.save_settings)
+        save_settings_button.grid(row=0, column=0, pady=6, padx=15)
+        cancel_button = Button(buttons_frame, text='Cancel', width=20, command=self.cancel)
+        cancel_button.grid(row=0, column=1, pady=6, padx=165)
+
         # Show dialog
         self.main.mainloop()
+
+    def save_settings(self):
+        print('save settings')
+
+    def cancel(self):
+        self.main.destroy()
 
     def move_right_all(self):
         print('all right')
