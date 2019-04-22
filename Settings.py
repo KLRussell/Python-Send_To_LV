@@ -138,7 +138,7 @@ class SettingsGUI:
                                 xscrollcommand=lv_scrollbar4.set)
         lv_scrollbar3.config(command=self.listbox2.yview)
         lv_scrollbar4.config(command=self.listbox2.xview)
-        self.listbox2.grid(row=0, column=0, rowspan=4, padx=8, pady=5)
+        self.listbox2.grid(row=0, column=0, rowspan=4, padx=8, pady=5) 
         lv_scrollbar3.grid(row=0, column=1, rowspan=4, sticky=N + S)
         lv_scrollbar4.grid(row=4, column=0, columnspan=2, sticky=E + W)
 
