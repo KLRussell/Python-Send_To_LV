@@ -349,16 +349,40 @@ class SettingsGUI:
         self.main.destroy()
 
     def move_right_all(self):
-        print('all right')
+        if self.listbox.size() > 0:
+            for i in range(self.listbox.size()-1):
+                self.listbox2.insert('end', self.listbox.get(i))
+
+            self.listbox.delete(0, self.listbox.size()-1)
 
     def move_right(self):
-        print('right')
+        if self.listbox.curselection():
+            self.listbox2.insert('end', self.listbox.get(self.listbox.curselection()))
+            self.listbox.delete(self.listbox.curselection(), self.listbox.curselection())
+
+            if self.listbox.size() > 0:
+                self.selection -= 1
+                self.listbox.select_set(self.selection)
+            else:
+                self.selection = -1
 
     def move_left_all(self):
-        print('all left')
+        if self.listbox2.size() > 0:
+            for i in range(self.listbox2.size() - 1):
+                self.listbox.insert('end', self.listbox2.get(i))
+
+            self.listbox2.delete(0, self.listbox2.size() - 1)
 
     def move_left(self):
-        print('left')
+        if self.listbox2.curselection():
+            self.listbox.insert('end', self.listbox2.get(self.listbox2.curselection()))
+            self.listbox2.delete(self.listbox2.curselection(), self.listbox2.curselection())
+
+            if self.listbox2.size() > 0:
+                self.selection2 -= 1
+                self.listbox2.select_set(self.selection2)
+            else:
+                self.selection2 = -1
 
 
 if __name__ == '__main__':
