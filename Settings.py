@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 from Global import grabobjs
+from Global import CryptHandle
 
 import os
 
@@ -9,6 +10,7 @@ Global_Objs = grabobjs(CurrDir)
 
 
 class SettingsGUI:
+    email_user_pass_obj = None
     curr_sql_table = None
     listbox = None
     listbox2 = None
@@ -211,7 +213,11 @@ class SettingsGUI:
         self.fill_textbox('Local_Settings', self.email_cc, 'email_cc')
         self.fill_textbox('Local_Settings', self.sql_table, 'STLV_TBL')
 
+        self.email_user_pass_obj = Global_Objs['Settings'].grab_item('email_pass')
         myitems = Global_Objs['Local_Settings'].grab_item('STLV_TBL_Cols').decrypt_text()
+
+        if self.email_user_pass_obj:
+            self.email_user_pass.set('*' * len(self.email_user_pass_obj.decrypt_text()))
 
         if myitems:
             myitems = myitems.replace(', ', ',').split(',')
@@ -239,6 +245,33 @@ class SettingsGUI:
                 for col in myresults['Column_Name']:
                     if not myitems or col not in myitems:
                         self.listbox.insert('end', col)
+
+    def hide_pass(self, event):
+        if self.email_user_pass_obj:
+            currpass = self.email_user_pass_obj.decrypt_text()
+            i = 0
+
+            for letter in self.email_user_pass.get():
+                if letter != '*':
+                    if i > len(currpass) - 1:
+                        currpass += letter
+                    else:
+                        currpass[i] = letter
+                i += 1
+
+            if len(currpass) - i > 0:
+                currpass = currpass[:i]
+
+            if currpass:
+                self.email_user_pass_obj.encrypt_text(currpass)
+                self.email_user_pass.set('*' * len(self.email_user_pass_obj.decrypt_text()))
+            else:
+                self.email_user_pass_obj = None
+                self.email_user_pass.set("")
+        else:
+            self.email_user_pass_obj = CryptHandle()
+            self.email_user_pass_obj.encrypt_text(self.email_user_pass.get())
+            self.email_user_pass.set('*' * len(self.email_user_pass_obj.decrypt_text()))
 
     def populate_columns(self, event):
         if self.sql_table.get().lower() in self.sql_tables['SQL_TBL'].tolist() and self.curr_sql_table != self.sql_table.get():
@@ -305,9 +338,6 @@ class SettingsGUI:
             self.listbox2.select_clear(self.selection2)
             self.selection2 -= 1
             self.listbox2.select_set(self.selection2)
-
-    def hide_pass(self, event):
-        print('hiding pass')
 
     def save_settings(self):
         print('save settings')
