@@ -342,12 +342,6 @@ class SettingsGUI:
             self.selection2 -= 1
             self.listbox2.select_set(self.selection2)
 
-    def save_settings(self):
-        print('save settings')
-
-    def cancel(self):
-        self.main.destroy()
-
     def move_right_all(self):
         if self.listbox.size() > 0:
             for i in range(self.listbox.size()-1):
@@ -383,6 +377,12 @@ class SettingsGUI:
                 self.listbox2.select_set(self.selection2)
             else:
                 self.selection2 = -1
+
+    def save_settings(self):
+        print('save settings')
+
+    def cancel(self):
+        self.main.destroy()
 
 
 if __name__ == '__main__':
