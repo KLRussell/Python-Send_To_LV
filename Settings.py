@@ -1,10 +1,19 @@
 from tkinter import *
 from tkinter import messagebox
+from Global import grabobjs
+
+import os
+
+CurrDir = os.path.dirname(os.path.abspath(__file__))
+Global_Objs = grabobjs(CurrDir)
 
 
 class SettingsGUI:
+    curr_sql_table = None
     listbox = None
     listbox2 = None
+    selection = 0
+    selection2 = 0
 
     def __init__(self, header=None):
         if header:
@@ -12,6 +21,8 @@ class SettingsGUI:
         else:
             self.header_text = 'Welcome to Send to LV Settings!\nSettings can be changed below.\nPress save when finished'
 
+        self.asql = Global_Objs['SQL']
+        self.asql.connect('alch')
         self.main = Tk()
         self.server = StringVar()
         self.database = StringVar()
@@ -23,6 +34,20 @@ class SettingsGUI:
         self.email_to = StringVar()
         self.email_cc = StringVar()
         self.sql_table = StringVar()
+        self.sql_tables = self.store_sql_tables()
+        assert not self.sql_tables.empty
+
+    def store_sql_tables(self):
+        return self.asql.query('''
+            select
+                lower(concat(table_schema, '.', table_name)) SQL_TBL,
+                table_schema,
+                table_name
+            
+            from information_schema.tables''')
+
+    def gui_cleanup(self, event):
+        self.asql.close()
 
     def build_gui(self):
         # Set GUI Geometry and GUI Title
@@ -156,8 +181,133 @@ class SettingsGUI:
         cancel_button = Button(buttons_frame, text='Cancel', width=20, command=self.cancel)
         cancel_button.grid(row=0, column=1, pady=6, padx=165)
 
+        self.listbox.bind("<Down>", self.on_list_down)
+        self.listbox.bind("<Up>", self.on_list_up)
+        self.listbox.bind('<<ListboxSelect>>', self.on_select)
+        self.listbox2.bind("<Down>", self.on_list_down2)
+        self.listbox2.bind("<Up>", self.on_list_up2)
+        self.listbox2.bind('<<ListboxSelect>>', self.on_select2)
+        eupass_txtbox.bind('<KeyRelease>', self.hide_pass)
+        lv_sqltbl_txtbox.bind('<KeyRelease>', self.populate_columns)
+        self.main.bind('<Destroy>', self.gui_cleanup)
+
+        self.fill_gui()
         # Show dialog
         self.main.mainloop()
+
+    @staticmethod
+    def fill_textbox(setting_name, set_val, val):
+        if val:
+            set_val.set(Global_Objs[setting_name].grab_item(val).decrypt_text())
+
+    def fill_gui(self):
+        self.fill_textbox('Settings', self.server, 'Server')
+        self.fill_textbox('Settings', self.database, 'Database')
+        self.fill_textbox('Settings', self.email_server, 'email_server')
+        self.fill_textbox('Settings', self.email_port, 'email_port')
+        self.fill_textbox('Settings', self.email_user_name, 'email_user')
+        self.fill_textbox('Local_Settings', self.email_from, 'email_from')
+        self.fill_textbox('Local_Settings', self.email_to, 'email_to')
+        self.fill_textbox('Local_Settings', self.email_cc, 'email_cc')
+        self.fill_textbox('Local_Settings', self.sql_table, 'STLV_TBL')
+
+        myitems = Global_Objs['Local_Settings'].grab_item('STLV_TBL_Cols').decrypt_text()
+
+        if myitems:
+            myitems = myitems.replace(', ', ',').split(',')
+
+            for col in myitems:
+                self.listbox2.insert('end', col)
+
+        if self.sql_table:
+            self.curr_sql_table = self.sql_table.get()
+            myrow = self.sql_tables[self.sql_tables['SQL_TBL'] == self.sql_table.get().lower()].reset_index()
+
+            if not myrow.empty:
+                myresults = self.asql.query('''
+                    select
+                        Column_Name
+        
+                from INFORMATION_SCHEMA.COLUMNS
+        
+                where
+                    TABLE_SCHEMA = '{0}'
+                        and
+                    TABLE_NAME = '{1}'
+                '''.format(myrow['table_schema'][0], myrow['table_name'][0]))
+
+                for col in myresults['Column_Name']:
+                    if not myitems or col not in myitems:
+                        self.listbox.insert('end', col)
+
+    def populate_columns(self, event):
+        if self.sql_table.get().lower() in self.sql_tables['SQL_TBL'].tolist() and self.curr_sql_table != self.sql_table.get():
+            myresponse = messagebox.askokcancel('Change Notice!',
+                                                'Changing existing SQL table will erase the column lists below. Would you like to proceed?',
+                                                parent=self.main)
+            if myresponse:
+                self.curr_sql_table = self.sql_table.get()
+
+                if self.listbox.size() > 0:
+                    self.listbox.delete(0, self.listbox.size() - 1)
+
+                if self.listbox2.size() > 0:
+                    self.listbox2.delete(0, self.listbox2.size() - 1)
+
+                myrow = self.sql_tables[self.sql_tables['SQL_TBL'] == self.sql_table.get().lower()].reset_index()
+
+                if not myrow.empty:
+                    myresults = self.asql.query('''
+                        select
+                            Column_Name
+        
+                    from INFORMATION_SCHEMA.COLUMNS
+        
+                    where
+                        TABLE_SCHEMA = '{0}'
+                            and
+                        TABLE_NAME = '{1}'
+                    '''.format(myrow['table_schema'][0], myrow['table_name'][0]))
+
+                    for col in myresults['Column_Name']:
+                        self.listbox.insert('end', col)
+            else:
+                self.sql_table.set(self.curr_sql_table)
+
+    def on_select(self, event):
+        if self.listbox and self.listbox.curselection() and -1 < self.selection < self.listbox.size() - 1:
+            self.selection = self.listbox.curselection()[0]
+
+    def on_list_down(self, event):
+        if self.selection < self.listbox.size() - 1:
+            self.listbox.select_clear(self.selection)
+            self.selection += 1
+            self.listbox.select_set(self.selection)
+
+    def on_list_up(self, event):
+        if self.selection > 0:
+            self.listbox.select_clear(self.selection)
+            self.selection -= 1
+            self.listbox.select_set(self.selection)
+
+    def on_select2(self, event):
+        if self.listbox2 and self.listbox2.curselection() and -1 < self.selection2 < self.listbox2.size() - 1:
+            self.selection2 = self.listbox2.curselection()[0]
+
+    def on_list_down2(self, event):
+        if self.selection2 < self.listbox2.size() - 1:
+            self.listbox2.select_clear(self.selection2)
+            self.selection2 += 1
+            self.listbox2.select_set(self.selection2)
+
+    def on_list_up2(self, event):
+        if self.selection2 > 0:
+            self.listbox2.select_clear(self.selection2)
+            self.selection2 -= 1
+            self.listbox2.select_set(self.selection2)
+
+    def hide_pass(self, event):
+        print('hiding pass')
 
     def save_settings(self):
         print('save settings')
