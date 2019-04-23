@@ -251,13 +251,16 @@ class SettingsGUI:
             currpass = self.email_user_pass_obj.decrypt_text()
             i = 0
 
-            for letter in self.email_user_pass.get():
-                if letter != '*':
-                    if i > len(currpass) - 1:
-                        currpass += letter
-                    else:
-                        currpass[i] = letter
-                i += 1
+            if len(self.email_user_pass.get()) > 0:
+                for letter in self.email_user_pass.get():
+                    if letter != '*':
+                        if i > len(currpass) - 1:
+                            currpass += letter
+                        else:
+                            mytext = list(currpass)
+                            mytext[i] = letter
+                            currpass = ''.join(mytext)
+                    i += 1
 
             if len(currpass) - i > 0:
                 currpass = currpass[:i]
