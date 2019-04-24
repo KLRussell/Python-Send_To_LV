@@ -380,7 +380,7 @@ class SettingsGUI:
                 self.selection2 = -1
 
     def save_settings(self):
-        print('save settings')
+
 
     def cancel(self):
         self.main.destroy()
