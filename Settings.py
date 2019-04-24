@@ -278,9 +278,9 @@ class SettingsGUI:
 
     def populate_columns(self, event):
         if self.sql_table.get().lower() in self.sql_tables['SQL_TBL'].tolist() and self.curr_sql_table != self.sql_table.get():
-            myresponse = messagebox.askokcancel('Change Notice!',
-                                                'Changing existing SQL table will erase the column lists below. Would you like to proceed?',
-                                                parent=self.main)
+            myresponse = messagebox.askokcancel(
+                'Change Notice!', 'Changing existing SQL table will erase the column lists below. Would you like to proceed?',
+                parent=self.main)
             if myresponse:
                 self.curr_sql_table = self.sql_table.get()
 
