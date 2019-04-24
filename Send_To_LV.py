@@ -229,14 +229,14 @@ def check_settings():
                                          encrypt=True)
 
     if not Global_Objs['Settings'].grab_item('email_port'):
-        Global_Objs['Settings'].add_item(key='email_port',
-                                         inputmsg='Please provide the email port for the server. (Default is 465 or 587):',
-                                         encrypt=True)
+        Global_Objs['Settings'].add_item(
+            key='email_port', inputmsg='Please provide the email port for the server. (Default is 465 or 587):',
+            encrypt=True)
 
     if not Global_Objs['Settings'].grab_item('email_user'):
-        Global_Objs['Settings'].add_item(key='email_user',
-                                         inputmsg='Please provide the user name for the email login:',
-                                         encrypt=True)
+        Global_Objs['Settings'].add_item(
+            key='email_user', inputmsg='Please provide the user name for the email login:',
+            encrypt=True)
 
     if not Global_Objs['Settings'].grab_item('email_pass'):
         Global_Objs['Settings'].add_item(key='email_pass',
