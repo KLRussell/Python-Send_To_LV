@@ -345,7 +345,7 @@ class SettingsGUI:
 
     def move_right_all(self):
         if self.listbox.size() > 0:
-            for i in range(self.listbox.size()-1):
+            for i in range(self.listbox.size()):
                 self.listbox2.insert('end', self.listbox.get(i))
 
             self.listbox.delete(0, self.listbox.size()-1)
@@ -363,7 +363,7 @@ class SettingsGUI:
 
     def move_left_all(self):
         if self.listbox2.size() > 0:
-            for i in range(self.listbox2.size() - 1):
+            for i in range(self.listbox2.size()):
                 self.listbox.insert('end', self.listbox2.get(i))
 
             self.listbox2.delete(0, self.listbox2.size() - 1)
