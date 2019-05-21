@@ -289,7 +289,8 @@ class SettingsGUI:
                 self.move_left_button.configure(state=DISABLED)
 
     def check_table(self, table):
-        return not self.sql_tables.empty and table and self.sql_tables[self.sql_tables['SQL_TBL'].str.lower() == table.lower()]
+        return not self.sql_tables.empty and table and\
+               len(self.sql_tables[self.sql_tables['SQL_TBL'].str.lower() == table.lower()]) > 0
 
     def populate_lists(self, table, cols=None):
         mytbl = table.split('.')
@@ -303,15 +304,15 @@ class SettingsGUI:
                     TABLE_SCHEMA = '{0}'
                         and
                     TABLE_NAME = '{1}'
-                '''.format(mytbl[0], mytbl[0]))
+                '''.format(mytbl[0], mytbl[1]))
 
         if not true_cols.empty:
-            if true_cols and cols and isinstance(cols, list):
-                for col in true_cols:
+            if not true_cols.empty and cols and isinstance(cols, list):
+                for col in true_cols['Column_Name'].tolist():
                     found = False
 
                     for col2 in cols:
-                        if col == col2:
+                        if col.lower() == col2.lower():
                             found = True
                             break
 
@@ -319,8 +320,8 @@ class SettingsGUI:
                         self.stlvs_list_box.insert('end', col)
                     else:
                         self.stlv_list_box.insert('end', col)
-            elif true_cols:
-                for col in true_cols:
+            elif not true_cols.empty:
+                for col in true_cols['Column_Name'].tolist():
                     self.stlv_list_box.insert('end', col)
         else:
             messagebox.showerror('No Columns Error!', 'Table has no columns in SQL Server')
@@ -365,8 +366,6 @@ class SettingsGUI:
             self.stlvs_list_box.delete(0, self.stlvs_list_box.size() - 1)
 
         if self.check_table(self.sql_table.get()):
-            self.populate_lists(self.sql_table.get())
-
             if str(self.stlv_list_box['state']) != 'normal':
                 self.stlv_list_box.configure(state=NORMAL)
                 self.stlvs_list_box.configure(state=NORMAL)
@@ -374,16 +373,15 @@ class SettingsGUI:
                 self.move_right_button.configure(state=NORMAL)
                 self.move_left_all_button.configure(state=NORMAL)
                 self.move_left_button.configure(state=NORMAL)
-        else:
-            self.sql_table.set('')
 
-            if str(self.stlv_list_box['state']) != 'disabled':
-                self.stlv_list_box.configure(state=DISABLED)
-                self.stlvs_list_box.configure(state=DISABLED)
-                self.move_right_all_button.configure(state=DISABLED)
-                self.move_right_button.configure(state=DISABLED)
-                self.move_left_all_button.configure(state=DISABLED)
-                self.move_left_button.configure(state=DISABLED)
+            self.populate_lists(self.sql_table.get())
+        elif str(self.stlv_list_box['state']) != 'disabled':
+            self.stlv_list_box.configure(state=DISABLED)
+            self.stlvs_list_box.configure(state=DISABLED)
+            self.move_right_all_button.configure(state=DISABLED)
+            self.move_right_button.configure(state=DISABLED)
+            self.move_left_all_button.configure(state=DISABLED)
+            self.move_left_button.configure(state=DISABLED)
 
     # Function to check network settings if populated
     def check_network(self, event):
