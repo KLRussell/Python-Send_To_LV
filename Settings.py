@@ -410,6 +410,22 @@ class SettingsGUI:
                 self.add_setting('Settings', self.database.get(), 'Database')
                 self.asql.connect('alch')
                 self.store_sql_tables()
+            else:
+                self.save_settings_button.configure(state=DISABLED)
+                self.stlv_list_box.configure(state=DISABLED)
+                self.stlvs_list_box.configure(state=DISABLED)
+                self.move_right_all_button.configure(state=DISABLED)
+                self.move_right_button.configure(state=DISABLED)
+                self.move_left_all_button.configure(state=DISABLED)
+                self.move_left_button.configure(state=DISABLED)
+                self.stlv_sqltbl_txtbox.configure(state=DISABLED)
+                self.ecc_txtbox.configure(state=DISABLED)
+                self.eto_txtbox.configure(state=DISABLED)
+                self.efrom_txtbox.configure(state=DISABLED)
+                self.eupass_txtbox.configure(state=DISABLED)
+                self.euname_txtbox.configure(state=DISABLED)
+                self.eport_txtbox.configure(state=DISABLED)
+                self.eserver_txtbox.configure(state=DISABLED)
 
     # Function adjusts selection of item when user clicks item (STLV List)
     def stlv_list_select(self, event):
