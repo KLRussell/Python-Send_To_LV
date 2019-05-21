@@ -3,12 +3,13 @@ from tkinter import *
 from tkinter import messagebox
 from Global import grabobjs
 from Global import CryptHandle
+import pandas as pd
 import os
 
 # Global Variable declaration
 curr_dir = os.path.dirname(os.path.abspath(__file__))
 main_dir = os.path.dirname(curr_dir)
-global_objs = grabobjs(main_dir, 'Vacuum')
+global_objs = grabobjs(main_dir, 'SendToLV')
 
 
 class SettingsGUI:
@@ -27,6 +28,7 @@ class SettingsGUI:
     euname_txtbox = None
     eport_txtbox = None
     eserver_txtbox = None
+    sql_tables = pd.DataFrame()
     stlv_list_sel = 0
     stlvs_list_sel = 0
 
@@ -35,7 +37,6 @@ class SettingsGUI:
         self.header_text = 'Welcome to Vacuum Settings!\nSettings can be changed below.\nPress save when finished'
 
         self.email_upass_obj = global_objs['Settings'].grab_item('email_pass')
-        self.sql_tables = self.store_sql_tables()
         self.asql = global_objs['SQL']
         self.main = Tk()
 
@@ -54,9 +55,9 @@ class SettingsGUI:
         self.main.bind('<Destroy>', self.gui_cleanup)
 
     def store_sql_tables(self):
-        return self.asql.query('''
+        self.sql_tables = self.asql.query('''
             select
-                lower(concat(table_schema, '.', table_name)) SQL_TBL
+                concat(table_schema, '.', table_name) SQL_TBL
 
             from information_schema.tables''')
 
@@ -264,6 +265,7 @@ class SettingsGUI:
             self.eserver_txtbox.configure(state=DISABLED)
         else:
             self.asql.connect('alch')
+            self.store_sql_tables()
             self.fill_textbox('Settings', self.email_server, 'email_server')
             self.fill_textbox('Settings', self.email_port, 'email_port')
             self.fill_textbox('Settings', self.email_user_name, 'email_user')
@@ -287,7 +289,7 @@ class SettingsGUI:
                 self.move_left_button.configure(state=DISABLED)
 
     def check_table(self, table):
-        return self.sql_tables and table and self.sql_tables[self.sql_tables['SQL_TBL'].str.lower() == table.lower()]
+        return not self.sql_tables.empty and table and self.sql_tables[self.sql_tables['SQL_TBL'].str.lower() == table.lower()]
 
     def populate_lists(self, table, cols=None):
         mytbl = table.split('.')
@@ -409,6 +411,7 @@ class SettingsGUI:
                 self.add_setting('Settings', self.server.get(), 'Server')
                 self.add_setting('Settings', self.database.get(), 'Database')
                 self.asql.connect('alch')
+                self.store_sql_tables()
 
     # Function adjusts selection of item when user clicks item (STLV List)
     def stlv_list_select(self, event):
