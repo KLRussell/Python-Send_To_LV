@@ -130,7 +130,7 @@ class SettingsGUI:
         server_txtbox = Entry(self.main, textvariable=self.server)
         server_label.pack(in_=network_frame, side=LEFT)
         server_txtbox.pack(in_=network_frame, side=LEFT)
-        server_txtbox.bind('<KeyRelease>', self.check_network)
+        server_txtbox.bind('<FocusOut>', self.check_network)
 
         #     Server Database Input Box
         database_label = Label(self.main, text='Database:')

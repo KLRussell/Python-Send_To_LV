@@ -370,7 +370,7 @@ class SQLHandle:
 
         try:
             if self.conn_type == 'alch':
-                self.engine = mysql.create_engine(self.conn_str)
+                self.engine = mysql.create_engine(self.conn_str, connect_args={'connect_timeout': 1})
                 obj = self.engine.execute(mysql.text(myquery))
                 if obj._saved_cursor.arraysize > 0:
                     myreturn = True
