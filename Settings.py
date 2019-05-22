@@ -331,19 +331,29 @@ class SettingsGUI:
             currpass = self.email_upass_obj.decrypt_text()
             i = 0
 
-            if len(self.email_user_pass.get()) > 0:
+            if len(self.email_user_pass.get()) > len(currpass):
                 for letter in self.email_user_pass.get():
                     if letter != '*':
                         if i > len(currpass) - 1:
                             currpass += letter
                         else:
                             mytext = list(currpass)
-                            mytext[i] = letter
+                            mytext.insert(i, letter)
                             currpass = ''.join(mytext)
                     i += 1
+            elif len(self.email_user_pass.get()) > 0:
+                i = 0
+                for letter in self.email_user_pass.get():
+                    if letter != '*':
+                        mytext = list(currpass)
+                        mytext[i] = letter
+                        currpass = ''.join(mytext)
+                    i += 1
 
-            if len(currpass) - i > 0:
-                currpass = currpass[:i]
+                if len(currpass) - i > 0:
+                    currpass = currpass[:i]
+            else:
+                currpass = None
 
             if currpass:
                 self.email_upass_obj.encrypt_text(currpass)
