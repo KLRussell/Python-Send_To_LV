@@ -37,7 +37,7 @@ class SettingsGUI:
 
     # Function that is executed upon creation of SettingsGUI class
     def __init__(self):
-        self.header_text = 'Welcome to Vacuum Settings!\nSettings can be changed below.\nPress save when finished'
+        self.header_text = 'Welcome to Send to LV Settings!\nSettings can be changed below.\nPress save when finished'
 
         self.email_upass_obj = global_objs['Settings'].grab_item('Email_Pass')
         self.asql = global_objs['SQL']
