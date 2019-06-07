@@ -30,6 +30,7 @@ class SettingsGUI:
     euname_txtbox = None
     eport_txtbox = None
     eserver_txtbox = None
+    stlv_sqltbl2_txtbox = None
     sql_tables = pd.DataFrame()
     stlv_list_sel = 0
     stlvs_list_sel = 0
@@ -38,7 +39,7 @@ class SettingsGUI:
     def __init__(self):
         self.header_text = 'Welcome to Vacuum Settings!\nSettings can be changed below.\nPress save when finished'
 
-        self.email_upass_obj = global_objs['Settings'].grab_item('email_pass')
+        self.email_upass_obj = global_objs['Settings'].grab_item('Email_Pass')
         self.asql = global_objs['SQL']
         self.main = Tk()
 
@@ -53,6 +54,7 @@ class SettingsGUI:
         self.email_to = StringVar()
         self.email_cc = StringVar()
         self.sql_table = StringVar()
+        self.sql_batch = StringVar()
 
         self.main.bind('<Destroy>', self.gui_cleanup)
 
@@ -92,7 +94,7 @@ class SettingsGUI:
             self.header_text = header
 
         # Set GUI Geometry and GUI Title
-        self.main.geometry('509x600+500+100')
+        self.main.geometry('509x650+500+80')
         self.main.title('Send to LV Settings')
         self.main.resizable(False, False)
 
@@ -106,7 +108,8 @@ class SettingsGUI:
         stlv_list_frame = LabelFrame(stlv_frame, text='SQL Table Columns', width=227, height=200)
         stlv_list_frame2 = Frame(stlv_frame, width=50, height=200)
         stlv_list_frame3 = LabelFrame(stlv_frame, text='Table Columns Selected', width=228, height=200)
-        stlv_settings_frame = LabelFrame(stlv_frame, text='SQL Table', width=505, height=70)
+        stlv_batch_frame = LabelFrame(stlv_frame, text='SQL Batch Table', width=505, height=70)
+        stlv_settings_frame = LabelFrame(stlv_frame, text='SQL History Record Table', width=505, height=70)
         buttons_frame = Frame(self.main)
 
         # Apply Frames into GUI
@@ -116,10 +119,11 @@ class SettingsGUI:
         econn_frame.grid(row=0, column=0, ipady=5)
         emsg_frame.grid(row=0, column=1, ipady=20)
         stlv_frame.pack(fill="both")
-        stlv_settings_frame.grid(row=0, columnspan=3, ipady=2)
-        stlv_list_frame.grid(row=1, column=0, rowspan=4, ipady=2, sticky='e')
-        stlv_list_frame2.grid(row=1, column=1, rowspan=4, ipady=2)
-        stlv_list_frame3.grid(row=1, column=2, rowspan=4, ipady=2, sticky='w')
+        stlv_batch_frame.grid(row=0, columnspan=3, ipady=2)
+        stlv_settings_frame.grid(row=1, columnspan=3, ipady=2)
+        stlv_list_frame.grid(row=2, column=0, rowspan=4, ipady=2, sticky='e')
+        stlv_list_frame2.grid(row=2, column=1, rowspan=4, ipady=2)
+        stlv_list_frame3.grid(row=2, column=2, rowspan=4, ipady=2, sticky='w')
         buttons_frame.pack(fill='both')
 
         # Apply Header text to Header_Frame that describes purpose of GUI
@@ -187,7 +191,11 @@ class SettingsGUI:
         self.ecc_txtbox.grid(row=2, column=1, padx=13, pady=5, sticky='e')
 
         # Apply Line Verification SQL Table Label & Input boxes to the EMsg_Frame
-        #     Send to LV SQL TBL Input Box
+        #     Send to LV Batch SQL TBL Input Box
+        self.stlv_sqltbl2_txtbox = Entry(stlv_batch_frame, textvariable=self.sql_batch, width=76)
+        self.stlv_sqltbl2_txtbox.grid(row=0, columnspan=3, padx=20, pady=5)
+
+        #     Send to LV History Records SQL TBL Input Box
         self.stlv_sqltbl_txtbox = Entry(stlv_settings_frame, textvariable=self.sql_table, width=76)
         self.stlv_sqltbl_txtbox.grid(row=0, columnspan=3, padx=20, pady=5)
         self.stlv_sqltbl_txtbox.bind('<KeyRelease>', self.check_table_event)
@@ -275,6 +283,13 @@ class SettingsGUI:
             self.fill_textbox('Local_Settings', self.email_to, 'Email_To')
             self.fill_textbox('Local_Settings', self.email_cc, 'Email_Cc')
             self.fill_textbox('Local_Settings', self.sql_table, 'Stlv_Tbl')
+            self.fill_textbox('Local_Settings', self.sql_batch, 'Stlv_Batch_Tbl')
+
+            if not self.email_server.get():
+                self.email_server.set('imail.granitenet.com')
+
+            if not self.email_port.get():
+                self.email_port.set('587')
 
             if self.email_upass_obj and isinstance(self.email_upass_obj, CryptHandle):
                 self.email_user_pass.set('*' * len(self.email_upass_obj.decrypt_text()))
@@ -309,7 +324,7 @@ class SettingsGUI:
                 '''.format(mytbl[0], mytbl[1]))
 
         if not true_cols.empty:
-            if not true_cols.empty and cols and isinstance(cols, list):
+            if not true_cols.empty and cols and (isinstance(cols, list) or isinstance(cols, tuple)):
                 for col in true_cols['Column_Name'].tolist():
                     found = False
 
@@ -588,14 +603,20 @@ class SettingsGUI:
         elif not self.email_cc.get():
             messagebox.showerror('Field Empty Error!', 'No value has been inputed for Email CC',
                                  parent=self.main)
+        elif not self.sql_batch.get():
+            messagebox.showerror('Field Empty Error!', 'No value has been inputed for SQL Batch Table',
+                                 parent=self.main)
         elif not self.sql_table.get():
-            messagebox.showerror('Field Empty Error!', 'No value has been inputed for SQL Table',
+            messagebox.showerror('Field Empty Error!', 'No value has been inputed for SQL History Record Table',
                                  parent=self.main)
         elif self.stlvs_list_box.size() < 1:
-            messagebox.showerror('Field Empty Error!', 'No table columns have been selected from SQL Table',
+            messagebox.showerror('Field Empty Error!', 'No table columns have been selected from SQL History Record Table',
                                  parent=self.main)
         elif not str(self.email_port.get()).isnumeric():
             messagebox.showerror('Field Error!', 'Email Port is a non-numeric port',
+                                 parent=self.main)
+        elif not self.check_table(self.sql_batch.get()):
+            messagebox.showerror('Field Error!', 'SQL Batch Table does not exist in SQL Server',
                                  parent=self.main)
         else:
             email_err = 0
@@ -634,8 +655,9 @@ class SettingsGUI:
                 self.add_setting('Local_Settings', self.email_to.get(), 'Email_To')
                 self.add_setting('Local_Settings', self.email_cc.get(), 'Email_Cc')
                 self.add_setting('Local_Settings', self.sql_table.get(), 'Stlv_Tbl')
+                self.add_setting('Local_Settings', self.sql_batch.get(), 'Stlv_Batch_Tbl')
                 self.add_setting('Local_Settings', self.stlvs_list_box.get(0, self.stlvs_list_box.size() - 1),
-                                 'Stlv_Tbl_Cols')
+                                 'Stlv_Tbl_Cols', False)
 
                 self.main.destroy()
 
