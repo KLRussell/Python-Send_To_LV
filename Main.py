@@ -126,9 +126,9 @@ class LVBatch:
 
         for index, col in enumerate(cols):
             if col == 'Assigned_To':
-                cols[index] = 'CAT.Full_Name Assigned_To'
+                cols[index] = 'CAT.Full_Name CAT_Rep'
             elif col == 'Logged_By':
-                cols[index] = 'CAT.Full_Name Logged_By'
+                cols[index] = 'CAT.Full_Name Logged_By_Rep'
             elif col == 'ST_ID':
                 cols[index] = 'ST.Source_TBL'
             elif col == 'BD_ID':
