@@ -31,6 +31,8 @@ class SettingsGUI:
     eport_txtbox = None
     eserver_txtbox = None
     stlv_sqltbl2_txtbox = None
+    cnr_source_table_txtbox = None
+    cat_table_txtbox = None
     sql_tables = pd.DataFrame()
     stlv_list_sel = 0
     stlvs_list_sel = 0
@@ -55,6 +57,8 @@ class SettingsGUI:
         self.email_cc = StringVar()
         self.sql_table = StringVar()
         self.sql_batch = StringVar()
+        self.source_table = StringVar()
+        self.cat_table = StringVar()
 
         self.main.bind('<Destroy>', self.gui_cleanup)
 
@@ -94,7 +98,7 @@ class SettingsGUI:
             self.header_text = header
 
         # Set GUI Geometry and GUI Title
-        self.main.geometry('509x650+500+80')
+        self.main.geometry('509x755+500+50')
         self.main.title('Send to LV Settings')
         self.main.resizable(False, False)
 
@@ -108,6 +112,8 @@ class SettingsGUI:
         stlv_list_frame = LabelFrame(stlv_frame, text='SQL Table Columns', width=227, height=200)
         stlv_list_frame2 = Frame(stlv_frame, width=50, height=200)
         stlv_list_frame3 = LabelFrame(stlv_frame, text='Table Columns Selected', width=228, height=200)
+        cat_table_frame = LabelFrame(stlv_frame, text='SQL CAT Emp Table', width=505, height=70)
+        cnr_source_table_frame = LabelFrame(stlv_frame, text='SQL CNR Source Table', width=505, height=70)
         stlv_batch_frame = LabelFrame(stlv_frame, text='SQL Batch Table', width=505, height=70)
         stlv_settings_frame = LabelFrame(stlv_frame, text='SQL History Record Table', width=505, height=70)
         buttons_frame = Frame(self.main)
@@ -119,11 +125,13 @@ class SettingsGUI:
         econn_frame.grid(row=0, column=0, ipady=5)
         emsg_frame.grid(row=0, column=1, ipady=20)
         stlv_frame.pack(fill="both")
-        stlv_batch_frame.grid(row=0, columnspan=3, ipady=2)
-        stlv_settings_frame.grid(row=1, columnspan=3, ipady=2)
-        stlv_list_frame.grid(row=2, column=0, rowspan=4, ipady=2, sticky='e')
-        stlv_list_frame2.grid(row=2, column=1, rowspan=4, ipady=2)
-        stlv_list_frame3.grid(row=2, column=2, rowspan=4, ipady=2, sticky='w')
+        cat_table_frame.grid(row=0, columnspan=3, ipady=2)
+        cnr_source_table_frame.grid(row=1, columnspan=3, ipady=2)
+        stlv_batch_frame.grid(row=2, columnspan=3, ipady=2)
+        stlv_settings_frame.grid(row=3, columnspan=3, ipady=2)
+        stlv_list_frame.grid(row=4, column=0, rowspan=4, ipady=2, sticky='e')
+        stlv_list_frame2.grid(row=4, column=1, rowspan=4, ipady=2)
+        stlv_list_frame3.grid(row=4, column=2, rowspan=4, ipady=2, sticky='w')
         buttons_frame.pack(fill='both')
 
         # Apply Header text to Header_Frame that describes purpose of GUI
@@ -191,6 +199,13 @@ class SettingsGUI:
         self.ecc_txtbox.grid(row=2, column=1, padx=13, pady=5, sticky='e')
 
         # Apply Line Verification SQL Table Label & Input boxes to the EMsg_Frame
+        self.cat_table_txtbox = Entry(cat_table_frame, textvariable=self.cat_table, width=76)
+        self.cat_table_txtbox.grid(row=0, columnspan=3, padx=20, pady=5)
+
+        # Apply Line Verification SQL Table Label & Input boxes to the EMsg_Frame
+        self.cnr_source_table_txtbox = Entry(cnr_source_table_frame, textvariable=self.source_table, width=76)
+        self.cnr_source_table_txtbox.grid(row=0, columnspan=3, padx=20, pady=5)
+
         #     Send to LV Batch SQL TBL Input Box
         self.stlv_sqltbl2_txtbox = Entry(stlv_batch_frame, textvariable=self.sql_batch, width=76)
         self.stlv_sqltbl2_txtbox.grid(row=0, columnspan=3, padx=20, pady=5)
@@ -266,6 +281,8 @@ class SettingsGUI:
             self.move_left_all_button.configure(state=DISABLED)
             self.move_left_button.configure(state=DISABLED)
             self.stlv_sqltbl_txtbox.configure(state=DISABLED)
+            self.cnr_source_table_txtbox.config(state=DISABLED)
+            self.cat_table_txtbox.config(state=DISABLED)
             self.ecc_txtbox.configure(state=DISABLED)
             self.eto_txtbox.configure(state=DISABLED)
             self.efrom_txtbox.configure(state=DISABLED)
@@ -284,6 +301,8 @@ class SettingsGUI:
             self.fill_textbox('Local_Settings', self.email_cc, 'Email_Cc')
             self.fill_textbox('Local_Settings', self.sql_table, 'Stlv_Tbl')
             self.fill_textbox('Local_Settings', self.sql_batch, 'Stlv_Batch_Tbl')
+            self.fill_textbox('Local_Settings', self.source_table, 'Source_Tbl')
+            self.fill_textbox('Local_Settings', self.cat_table, 'Cat_Tbl')
 
             if not self.email_server.get():
                 self.email_server.set('imail.granitenet.com')
@@ -428,6 +447,8 @@ class SettingsGUI:
                 self.move_left_all_button.configure(state=NORMAL)
                 self.move_left_button.configure(state=NORMAL)
                 self.stlv_sqltbl_txtbox.configure(state=NORMAL)
+                self.cnr_source_table_txtbox.config(state=NORMAL)
+                self.cat_table_txtbox.config(state=NORMAL)
                 self.ecc_txtbox.configure(state=NORMAL)
                 self.eto_txtbox.configure(state=NORMAL)
                 self.efrom_txtbox.configure(state=NORMAL)
@@ -448,6 +469,8 @@ class SettingsGUI:
                 self.move_left_all_button.configure(state=DISABLED)
                 self.move_left_button.configure(state=DISABLED)
                 self.stlv_sqltbl_txtbox.configure(state=DISABLED)
+                self.cnr_source_table_txtbox.config(state=DISABLED)
+                self.cat_table_txtbox.config(state=DISABLED)
                 self.ecc_txtbox.configure(state=DISABLED)
                 self.eto_txtbox.configure(state=DISABLED)
                 self.efrom_txtbox.configure(state=DISABLED)
@@ -464,6 +487,8 @@ class SettingsGUI:
             self.move_left_all_button.configure(state=DISABLED)
             self.move_left_button.configure(state=DISABLED)
             self.stlv_sqltbl_txtbox.configure(state=DISABLED)
+            self.cnr_source_table_txtbox.config(state=DISABLED)
+            self.cat_table_txtbox.config(state=DISABLED)
             self.ecc_txtbox.configure(state=DISABLED)
             self.eto_txtbox.configure(state=DISABLED)
             self.efrom_txtbox.configure(state=DISABLED)
@@ -609,6 +634,12 @@ class SettingsGUI:
         elif not self.sql_table.get():
             messagebox.showerror('Field Empty Error!', 'No value has been inputed for SQL History Record Table',
                                  parent=self.main)
+        elif not self.source_table.get():
+            messagebox.showerror('Field Empty Error!', 'No value has been inputed for SQL Source Table',
+                                 parent=self.main)
+        elif not self.cat_table.get():
+            messagebox.showerror('Field Empty Error!', 'No value has been inputed for SQL CAT Table',
+                                 parent=self.main)
         elif self.stlvs_list_box.size() < 1:
             messagebox.showerror('Field Empty Error!', 'No table columns have been selected from SQL History Record Table',
                                  parent=self.main)
@@ -656,6 +687,8 @@ class SettingsGUI:
                 self.add_setting('Local_Settings', self.email_cc.get(), 'Email_Cc')
                 self.add_setting('Local_Settings', self.sql_table.get(), 'Stlv_Tbl')
                 self.add_setting('Local_Settings', self.sql_batch.get(), 'Stlv_Batch_Tbl')
+                self.add_setting('Local_Settings', self.source_table.get(), 'Source_Tbl')
+                self.add_setting('Local_Settings', self.cat_table.get(), 'Cat_Tbl')
                 self.add_setting('Local_Settings', self.stlvs_list_box.get(0, self.stlvs_list_box.size() - 1),
                                  'Stlv_Tbl_Cols', False)
 
