@@ -133,6 +133,8 @@ class LVBatch:
                 cols[index] = 'ST.Source_TBL'
             elif col == 'BD_ID':
                 cols[index] = 'CAST(GETDATE() AS DATE) Batch_DT'
+            elif col == 'Back_Bill_Info':
+                cols[index] = "CASE WHEN Back_Bill_Info = 1 THEN 'Yes' ELSE 'No' END Back_Bill_Info"
 
         return cols
 
