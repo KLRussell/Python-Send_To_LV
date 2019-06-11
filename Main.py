@@ -357,7 +357,7 @@ if __name__ == '__main__':
 
                 if myobj.write_batch():
                     myobj.send_batch()
-                    # myobj.update_tbl()
+                    myobj.update_tbl()
 
         finally:
             myobj.close_conn()
