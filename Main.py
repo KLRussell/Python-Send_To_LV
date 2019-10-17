@@ -11,6 +11,7 @@ import zipfile
 import os
 import pandas as pd
 import datetime
+import sys
 
 if getattr(sys, 'frozen', False):
     application_path = sys.executable

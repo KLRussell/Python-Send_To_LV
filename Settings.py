@@ -7,6 +7,7 @@ from Global import CryptHandle
 import smtplib
 import pandas as pd
 import os
+import sys
 
 if getattr(sys, 'frozen', False):
     application_path = sys.executable
