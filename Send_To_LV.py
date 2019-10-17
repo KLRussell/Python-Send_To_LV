@@ -4,7 +4,7 @@ from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email.utils import formatdate
 from email import encoders
-from Settings import SettingsGUI
+from Send_To_LV_Settings import SettingsGUI
 
 import smtplib
 import zipfile
