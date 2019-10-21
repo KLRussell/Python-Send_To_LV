@@ -97,6 +97,8 @@ class SettingsGUI:
         if val:
             global_objs[setting_list].add_item(key=key, val=val, encrypt=encrypt)
 
+        global_objs[setting_list].write_shelf()
+
     # Function to build GUI for settings
     def build_gui(self, header=None):
         # Change to custom header title if specified
