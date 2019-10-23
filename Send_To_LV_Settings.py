@@ -11,13 +11,16 @@ import sys
 
 if getattr(sys, 'frozen', False):
     application_path = sys.executable
+    ico_dir = sys._MEIPASS
 else:
     application_path = __file__
+    ico_dir = os.path.dirname(__file__)
 
 # Global Variable declaration
 curr_dir = os.path.dirname(os.path.abspath(application_path))
 main_dir = os.path.dirname(curr_dir)
 global_objs = grabobjs(main_dir, 'SendToLV')
+icon_path = os.path.join(ico_dir, '%s.ico' % os.path.splitext(os.path.basename(application_path))[0])
 
 
 class SettingsGUI:
@@ -50,6 +53,7 @@ class SettingsGUI:
         self.email_upass_obj = global_objs['Settings'].grab_item('Email_Pass')
         self.asql = global_objs['SQL']
         self.main = Tk()
+        self.main.iconbitmap(icon_path)
 
         # GUI Variables
         self.server = StringVar()
